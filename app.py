@@ -82,13 +82,19 @@ with st.container():
             "logo of an oil company",
             key="placeholder",
         )
+        enrich_prompt = st.toggle("Enrich Prompt", value=True)
         button = st.button("Generate Art 🏃", key="generate")
         if button and ai_image_idea:
             st.write("Generating Artwork...")
             # generate queries
-            response_dict_gpt = generate_query_variations_gpt(
-                original_prompt=ai_image_idea, n_variations=n_variations
-            )
+
+            if enrich_prompt:
+                response_dict_gpt = generate_query_variations_gpt(
+                    original_prompt=ai_image_idea, n_variations=n_variations
+                )
+                print(response_dict_gpt, "RESPONSE DICT")
+            else:
+                response_dict_gpt = {"prompt": ai_image_idea}
 
             image_responses = query_multiple_variations_dalle(response_dict_gpt)
 
@@ -97,11 +103,15 @@ with st.container():
                 image_list=image_responses,
                 filename="generation",
                 image_dir=base_image_dir,
+                original_prompt=ai_image_idea,
             )
 
     with col2:
         with st.spinner("Generating your Art"):
             print(len(filepaths), "LEN")
+            if len(filepaths) == 1:
+                # display single image
+                st.image(filepaths[0], width=400)
             idx = 0
             for _ in range(len(filepaths) - 1):
                 cols = st.columns(2)
